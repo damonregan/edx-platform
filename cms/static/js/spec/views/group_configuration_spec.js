@@ -1,7 +1,8 @@
 define([
     'js/models/group_configuration', 'js/models/course',
-    'js/collections/group_configuration', 'js/views/group_configuration_details',
-    'js/views/group_configurations_list', 'jasmine-stealth'
+    'js/collections/group_configuration',
+    'js/views/group_configuration_details',
+    'js/views/group_configuration_list', 'jasmine-stealth'
 ], function(
     GroupConfigurationModel, Course, GroupConfigurationSet,
     GroupConfigurationDetails, GroupConfigurationsList
@@ -122,8 +123,8 @@ define([
             this.view.render();
         });
 
-        var message = 'should render the empty template if there are no group ' +
-                      'configurations';
+        var message = 'should render the empty template if there are no ' +
+                'group configurations';
         it(message, function() {
             expect(this.view.$el).toContainText(
                 'You haven\'t created any group configurations yet.'
@@ -132,7 +133,8 @@ define([
             expect(this.showSpies.constructor).not.toHaveBeenCalled();
         });
 
-        it('should render GroupConfigurationDetails views by default', function() {
+        message = 'should render GroupConfigurationDetails views by default';
+        it(message, function() {
             this.collection.add([{}, {}, {}]);
             this.view.render();
 

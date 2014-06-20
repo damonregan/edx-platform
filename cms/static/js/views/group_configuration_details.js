@@ -1,7 +1,6 @@
 define([
     'js/views/baseview', 'underscore', 'gettext'
-],
-function(BaseView, _, gettext) {
+], function(BaseView, _, gettext) {
     'use strict';
     var GroupConfigurationDetails = BaseView.extend({
         tagName: 'section',
@@ -25,6 +24,7 @@ function(BaseView, _, gettext) {
             });
 
             this.$el.html(this.template(attrs));
+
             return this;
         },
 

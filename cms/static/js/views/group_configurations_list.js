@@ -1,5 +1,6 @@
-define(['js/views/baseview', 'jquery', 'js/views/group_configuration_details'],
-function(BaseView, $, GroupConfigurationDetailsView) {
+define([
+    'js/views/baseview', 'jquery', 'js/views/group_configuration_details'
+], function(BaseView, $, GroupConfigurationDetailsView) {
     'use strict';
     var GroupConfigurationsList = BaseView.extend({
         tagName: 'div',
@@ -28,6 +29,7 @@ function(BaseView, $, GroupConfigurationDetailsView) {
 
                 this.$el.html([frag]);
             }
+
             return this;
         }
     });

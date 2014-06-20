@@ -49,6 +49,18 @@ def press_the_notification_button(page, name):
     page.wait_for_ajax()
 
 
+def press_the_notification_button(page, name):
+    # Because the notification uses a CSS transition,
+    # Selenium will always report it as being visible.
+    # This makes it very difficult to successfully click
+    # the "Save" button at the UI level.
+    # Instead, we use JavaScript to reliably click
+    # the button.
+    btn_css = 'div#page-notification a.action-%s' % name.lower()
+    page.browser.execute_script("$('{}').focus().click()".format(btn_css))
+    page.wait_for_ajax()
+
+
 def add_discussion(page, menu_index):
     """
     Add a new instance of the discussion category.
