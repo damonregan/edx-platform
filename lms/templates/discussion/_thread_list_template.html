@@ -35,7 +35,7 @@
         </ul>
 
 
-        %if is_course_cohorted and is_moderator:
+        %if is_course_cohorted and is_moderator=="true":
         <span class="group-filter-label cohort">${_("Show:")}</span>
             <select class="group-filter-select cohort-options cohort">
                 <option value="all">${_("View All")}</option>

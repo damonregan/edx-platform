@@ -26,9 +26,36 @@ from opaque_keys.edx.locations import SlashSeparatedCourseKey
 THREADS_PER_PAGE = 20
 INLINE_THREADS_PER_PAGE = 20
 PAGES_NEARBY_DELTA = 2
-escapedict = {'"': '&quot;'}
 log = logging.getLogger("edx.discussions")
 
+
+def dom_safe_json(obj):
+    """
+    return a JSON string for obj which is safe to embed as the value of an attribute in a DOM node
+    """
+    return saxutils.escape(json.dumps(obj), {'"': '&quot;'})
+
+def make_course_settings(course, include_category_map=False, **kwargs):
+    """
+    Generate a JSON-serializable model for course settings, which will be used to initialize a
+    DiscussionCourseSettings object on the client.
+
+    kwargs can be used to supply data already fetched from the database, avoiding redundant queries.  The recognized
+    keys are: category_map, cohorts.  This facility will be removed once the _filter_dropdown.html and
+    _thread_list_template.html server-side templates have been retired.
+    """
+
+    obj = {
+        'is_cohorted': is_course_cohorted(course.id),
+        'allow_anonymous': course.allow_anonymous,
+        'allow_anonymous_to_peers': course.allow_anonymous_to_peers,
+        'cohorts': [{"id": str(g.id), "name": g.name} for g in kwargs.get('cohorts', get_course_cohorts(course.id))],
+    }
+
+    if include_category_map:
+        obj['category_map'] = kwargs.get('category_map', utils.get_discussion_category_map(course))
+
+    return obj
 
 @newrelic.agent.function_trace()
 def get_threads(request, course_id, discussion_id=None, per_page=THREADS_PER_PAGE):
@@ -125,31 +152,6 @@ def inline_discussion(request, course_id, discussion_id):
     with newrelic.agent.FunctionTrace(nr_transaction, "get_metadata_for_threads"):
         annotated_content_info = utils.get_metadata_for_threads(course_id, threads, request.user, user_info)
 
-    allow_anonymous = course.allow_anonymous
-    allow_anonymous_to_peers = course.allow_anonymous_to_peers
-
-    #since inline is all one commentable, only show or allow the choice of cohorts
-    #if the commentable is cohorted, otherwise everything is not cohorted
-    #and no one has the option of choosing a cohort
-    is_cohorted = is_course_cohorted(course_id) and is_commentable_cohorted(course_id, discussion_id)
-    is_moderator = cached_has_permission(request.user, "see_all_cohorts", course_id)
-
-    cohorts_list = list()
-
-    if is_cohorted:
-        cohorts_list.append({'name': _('All Groups'), 'id': None})
-
-        #if you're a mod, send all cohorts and let you pick
-
-        if is_moderator:
-            cohorts = get_course_cohorts(course_id)
-            for cohort in cohorts:
-                cohorts_list.append({'name': cohort.name, 'id': cohort.id})
-
-        else:
-            #students don't get to choose
-            cohorts_list = None
-
     return utils.JsonResponse({
         'discussion_data': map(utils.safe_content, threads),
         'user_info': user_info,
@@ -157,13 +159,8 @@ def inline_discussion(request, course_id, discussion_id):
         'page': query_params['page'],
         'num_pages': query_params['num_pages'],
         'roles': utils.get_role_ids(course_id),
-        'allow_anonymous_to_peers': allow_anonymous_to_peers,
-        'allow_anonymous': allow_anonymous,
-        'cohorts': cohorts_list,
-        'is_moderator': is_moderator,
-        'is_cohorted': is_cohorted
+        'course_settings': make_course_settings(course)
     })
-
 
 @login_required
 def forum_form_discussion(request, course_id):
@@ -208,25 +205,26 @@ def forum_form_discussion(request, course_id):
 
             user_cohort_id = get_cohort_id(request.user, course_id)
 
+        course_settings = make_course_settings(course, category_map=category_map, cohorts=cohorts, include_category_map=True)
+
         context = {
             'csrf': csrf(request)['csrf_token'],
             'course': course,
             #'recent_active_threads': recent_active_threads,
             'staff_access': has_access(request.user, 'staff', course),
-            'threads': saxutils.escape(json.dumps(threads), escapedict),
+            'threads': dom_safe_json(threads),
             'thread_pages': query_params['num_pages'],
-            'user_info': saxutils.escape(json.dumps(user_info), escapedict),
+            'user_info': dom_safe_json(user_info),
             'flag_moderator': cached_has_permission(request.user, 'openclose_thread', course.id) or has_access(request.user, 'staff', course),
-            'annotated_content_info': saxutils.escape(json.dumps(annotated_content_info), escapedict),
+            'annotated_content_info': dom_safe_json(annotated_content_info),
             'course_id': course.id.to_deprecated_string(),
-            'category_map': category_map,
-            'roles': saxutils.escape(json.dumps(utils.get_role_ids(course_id)), escapedict),
-            'is_moderator': cached_has_permission(request.user, "see_all_cohorts", course_id),
-            'cohorts': cohorts,
-            'user_cohort': user_cohort_id,
-            'cohorted_commentables': cohorted_commentables,
-            'is_course_cohorted': is_course_cohorted(course_id),
+            'category_map': category_map,  # still needed to render _filter_dropdown
+            'roles': dom_safe_json(utils.get_role_ids(course_id)),
+            'cohorts': cohorts,  # still needed to render _thread_list_template
+            'user_cohort': user_cohort_id, # read from container in NewPostView
+            'is_course_cohorted': is_course_cohorted(course_id),  # still needed to render _thread_list_template
             'sort_preference': user.default_sort_key,
+            'course_settings': dom_safe_json(course_settings)
         }
         # print "start rendering.."
         return render_to_response('discussion/index.html', context)
@@ -297,27 +295,29 @@ def single_thread(request, course_id, discussion_id, thread_id):
             cohorts = get_course_cohorts(course_id)
             cohorted_commentables = get_cohorted_commentables(course_id)
             user_cohort = get_cohort_id(request.user, course_id)
+
+        course_settings = make_course_settings(course, category_map=category_map, cohorts=cohorts, include_category_map=True)
+
         context = {
             'discussion_id': discussion_id,
             'csrf': csrf(request)['csrf_token'],
             'init': '',   # TODO: What is this?
-            'user_info': saxutils.escape(json.dumps(user_info), escapedict),
-            'annotated_content_info': saxutils.escape(json.dumps(annotated_content_info), escapedict),
+            'user_info': dom_safe_json(user_info),
+            'annotated_content_info': dom_safe_json(annotated_content_info),
             'course': course,
             #'recent_active_threads': recent_active_threads,
             'course_id': course.id.to_deprecated_string(),   # TODO: Why pass both course and course.id to template?
             'thread_id': thread_id,
-            'threads': saxutils.escape(json.dumps(threads), escapedict),
+            'threads': dom_safe_json(threads),
             'category_map': category_map,
-            'roles': saxutils.escape(json.dumps(utils.get_role_ids(course_id)), escapedict),
+            'roles': dom_safe_json(utils.get_role_ids(course_id)),
             'thread_pages': query_params['num_pages'],
             'is_course_cohorted': is_course_cohorted(course_id),
-            'is_moderator': cached_has_permission(request.user, "see_all_cohorts", course_id),
             'flag_moderator': cached_has_permission(request.user, 'openclose_thread', course.id) or has_access(request.user, 'staff', course),
             'cohorts': cohorts,
             'user_cohort': get_cohort_id(request.user, course_id),
-            'cohorted_commentables': cohorted_commentables,
             'sort_preference': cc_user.default_sort_key,
+            'course_settings': dom_safe_json(course_settings)
         }
         return render_to_response('discussion/index.html', context)
 
@@ -350,7 +350,7 @@ def user_profile(request, course_id, user_id):
                 'discussion_data': map(utils.safe_content, threads),
                 'page': query_params['page'],
                 'num_pages': query_params['num_pages'],
-                'annotated_content_info': saxutils.escape(json.dumps(annotated_content_info), escapedict),
+                'annotated_content_info': dom_safe_json(annotated_content_info),
             })
         else:
             context = {
@@ -358,9 +358,9 @@ def user_profile(request, course_id, user_id):
                 'user': request.user,
                 'django_user': User.objects.get(id=user_id),
                 'profiled_user': profiled_user.to_dict(),
-                'threads': saxutils.escape(json.dumps(threads), escapedict),
-                'user_info': saxutils.escape(json.dumps(user_info), escapedict),
-                'annotated_content_info': saxutils.escape(json.dumps(annotated_content_info), escapedict),
+                'threads': dom_safe_json(threads),
+                'user_info': dom_safe_json(user_info),
+                'annotated_content_info': dom_safe_json(annotated_content_info),
                 'page': query_params['page'],
                 'num_pages': query_params['num_pages'],
 #                'content': content,
@@ -408,9 +408,9 @@ def followed_threads(request, course_id, user_id):
                 'user': request.user,
                 'django_user': User.objects.get(id=user_id),
                 'profiled_user': profiled_user.to_dict(),
-                'threads': saxutils.escape(json.dumps(threads), escapedict),
-                'user_info': saxutils.escape(json.dumps(user_info), escapedict),
-                'annotated_content_info': saxutils.escape(json.dumps(annotated_content_info), escapedict),
+                'threads': dom_safe_json(threads),
+                'user_info': dom_safe_json(user_info),
+                'annotated_content_info': dom_safe_json(annotated_content_info),
                 #                'content': content,
             }
 
