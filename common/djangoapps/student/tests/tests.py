@@ -30,6 +30,8 @@ from student.views import (process_survey_link, _cert_info,
                            change_enrollment, complete_course_mode_info)
 from student.tests.factories import UserFactory, CourseModeFactory
 
+from certificates.models import CertificateStatuses
+from certificates.tests.factories import GeneratedCertificateFactory
 import shoppingcart
 
 log = logging.getLogger(__name__)
@@ -231,6 +233,25 @@ class DashboardTest(TestCase):
         verified_mode.save()
         self.assertFalse(enrollment.refundable())
 
+
+    def test_refundable_when_certificate_exists(self):
+        verified_mode = CourseModeFactory.create(
+            course_id=self.course.id,
+            mode_slug='verified',
+            mode_display_name='Verified',
+            expiration_datetime=datetime.now(pytz.UTC) + timedelta(days=1)
+        )
+        enrollment = CourseEnrollment.enroll(self.user, self.course.id, mode='verified')
+
+        self.assertTrue(enrollment.refundable())
+
+        generated_certificate = GeneratedCertificateFactory.create(
+            user=self.user,
+            course_id=self.course.id,
+            status=CertificateStatuses.downloadable
+        )
+
+        self.assertFalse(enrollment.refundable())
 
 
 class EnrollInCourseTest(TestCase):
