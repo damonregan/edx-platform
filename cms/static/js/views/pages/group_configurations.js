@@ -14,8 +14,15 @@ function ($, _, gettext, BaseView, ConfigurationsListView) {
 
         render: function() {
             this.hideLoadingIndicator();
-            this.$el.append(this.listView.render().el);
+            this.$('.content-primary').append(this.listView.render().el);
+            this.addButtonActions();
             this.addGlobalActions();
+        },
+
+        addButtonActions: function () {
+            this.$('.nav-actions .new-button').click(function (event) {
+                this.listView.addOne(event);
+            }.bind(this));
         },
 
         addGlobalActions: function () {

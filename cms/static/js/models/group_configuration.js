@@ -10,8 +10,11 @@ function(Backbone, _, gettext, GroupModel, GroupCollection) {
                 id: null,
                 name: '',
                 description: '',
-                groups: new GroupCollection([{}, {}]),
-                showGroups: false
+                groups: new GroupCollection([
+                    { name: 'Group A' }, { name: 'Group B' }
+                ]),
+                showGroups: false,
+                editing: false
             };
         },
 

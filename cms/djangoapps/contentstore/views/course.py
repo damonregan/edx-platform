@@ -855,7 +855,7 @@ def textbooks_detail_handler(request, course_key_string, textbook_id):
         return JsonResponse()
 
 
-@require_http_methods(("GET"))
+@require_http_methods(("GET", "POST"))
 @login_required
 @ensure_csrf_cookie
 def group_configurations_list_handler(request, course_key_string):
@@ -867,14 +867,27 @@ def group_configurations_list_handler(request, course_key_string):
     """
     course_key = CourseKey.from_string(course_key_string)
     course = _get_course_module(course_key, request.user)
-    group_configuration_url = reverse_course_url('group_configurations_list_handler', course_key)
-    splite_test_enabled = SPLIT_TEST_COMPONENT_TYPE in course.advanced_modules
 
-    return render_to_response('group_configurations.html', {
-        'context_course': course,
-        'group_configuration_url': group_configuration_url,
-        'configurations': [u.to_json() for u in course.user_partitions] if splite_test_enabled else None,
-    })
+    if not "application/json" in request.META.get('HTTP_ACCEPT', 'text/html'):
+        group_configuration_url = reverse_course_url('group_configurations_list_handler', course_key)
+        splite_test_enabled = SPLIT_TEST_COMPONENT_TYPE in course.advanced_modules
+
+        return render_to_response('group_configurations.html', {
+            'context_course': course,
+            'group_configuration_url': group_configuration_url,
+            'configurations': [u.to_json() for u in course.user_partitions] if splite_test_enabled else None,
+        })
+
+    if request.method == 'POST':
+        # create a new group configuration for the course
+        try:
+            configuration = json.loads(request.body)
+        except Exception as err:
+            return JsonResponse({"error": err.message}, status=400)
+        if not configuration.get("id"):
+            configuration["id"] = 1
+        resp = JsonResponse(configuration, status=201)
+        return resp
 
 
 def _get_course_creator_status(user):
