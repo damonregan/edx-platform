@@ -45,7 +45,7 @@ from .component import (
     OPEN_ENDED_COMPONENT_TYPES,
     NOTE_COMPONENT_TYPES,
     ADVANCED_COMPONENT_POLICY_KEY,
-    SPLIT_TEST_COMPONENT_TYPE
+    SPLIT_TEST_COMPONENT_TYPE,
 )
 
 from django_comment_common.models import assign_default_role
