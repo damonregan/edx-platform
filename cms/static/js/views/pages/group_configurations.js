@@ -16,7 +16,7 @@ function ($, _, gettext, BaseView, ConfigurationsListView) {
             this.hideLoadingIndicator();
             this.$('.content-primary').append(this.listView.render().el);
             this.addButtonActions();
-            this.addGlobalActions();
+            this.addWindowActions();
         },
 
         addButtonActions: function () {
@@ -25,7 +25,7 @@ function ($, _, gettext, BaseView, ConfigurationsListView) {
             }.bind(this));
         },
 
-        addGlobalActions: function () {
+        addWindowActions: function () {
             $(window).on('beforeunload', this.onBeforeUnload.bind(this));
         },
 

@@ -38,12 +38,8 @@ define([
 
                 expect(groups).toBeInstanceOf(GroupSet);
                 expect(groups.length).toEqual(2);
-                expect(groups.at(0).isEmpty()).toBeTruthy();
-                expect(groups.at(1).isEmpty()).toBeTruthy();
-            });
-
-            it('should be empty by default', function() {
-                expect(this.model.isEmpty()).toBeTruthy();
+                expect(groups.at(0).get('name')).toBe('Group A');
+                expect(groups.at(1).get('name')).toBe('Group B');
             });
 
             it('should be able to reset itself', function() {
@@ -63,7 +59,9 @@ define([
                 expect(this.model.isDirty()).toBeTruthy();
             });
 
-            it('should not be dirty after calling setOriginalAttributes', function() {
+            var message = 'should not be dirty after calling ' +
+                        'setOriginalAttributes';
+            it(message, function() {
                 this.model.set('name', 'foobar');
                 this.model.setOriginalAttributes();
 
@@ -111,6 +109,7 @@ define([
                       'name': 'My GroupConfiguration',
                       'description': 'Some description',
                       'showGroups': false,
+                      'editing': false,
                       'groups': [
                         {
                           'name': 'Group 1'
