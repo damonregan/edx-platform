@@ -1156,7 +1156,6 @@ div.wrapper-comp-editor.is-inactive ~ div.launch-latex-compiler{
 // xblock - unit page container
 
 body.unit .xblock-type-container {
-  @extend %wrap-xblock;
   margin: 0;
   border: none;
   box-shadow: none;
