@@ -8,68 +8,37 @@
 
 // UI: container page view
 .view-container {
+  @extend %two-col-1;
 
-  .mast {
-    border-bottom: none;
-    padding-bottom: 0;
+  .wrapper-mast {
 
-    .page-header-title {
-      @extend %t-title;
-      @include font-size(28);
-      @include line-height(32);
-      font-weight: 600;
-    }
+    .mast {
+      border-bottom: none;
+      padding-bottom: 0;
 
-    .page-header-title-edit {
-      @extend %t-title4;
-      background: none repeat scroll 0 0 white;
-      border: 0;
-      box-shadow: 0 0 2px 2px $shadow inset;
-      font-weight: 600;
-    }
-  }
+      .page-header-title {
+        @extend %t-title;
+        @include font-size(28);
+        @include line-height(32);
+        font-weight: 600;
+      }
 
-  .wrapper-mast .mast.has-navigation .nav-actions {
-
-    .nav-item {
-
-      .edit-button {
-        @include blue-button;
-        @extend %t-action4;
-        padding: ($baseline/4) ($baseline/2);
-        text-align: center;
-
-        .action-button-text {
-          display: inline-block;
-          vertical-align: baseline;
-        }
-
-        [class^="icon-"] {
-          display: inline-block;
-          vertical-align: baseline;
-        }
+      .page-header-title-edit {
+        @extend %t-title4;
+        background: none repeat scroll 0 0 white;
+        border: 0;
+        box-shadow: 0 0 2px 2px $shadow inset;
+        font-weight: 600;
       }
     }
   }
 
-  .content-primary, .content-supplementary {
-    @include box-sizing(border-box);
-    float: left;
-  }
-
   .content-primary {
-    margin-right: flex-gutter();
-    width: flex-grid(9,12);
-    box-shadow: none;
-    border: 0;
 
     .no-container-content {
-      @extend %ui-well;
-      padding: $baseline;
-      background-color: $gray-l4;
-      text-align: center;
-      color: $gray;
+      @extend %no-content;
 
+      // custom rules to handle different xblock styling in different contexts
       .icon-warning-sign {
         display: none;
       }
@@ -80,83 +49,41 @@
         padding: 8px 20px 10px;
         text-align: center;
         margin: ($baseline/2) 0 ($baseline/2) $baseline;
-
-        [class^="icon-"] {
-          margin-right: ($baseline/2);
-        }
       }
     }
   }
 
   .content-supplementary {
-    width: flex-grid(3,12);
 
     label {
       @extend %t-title8;
     }
 
     .bit-publishing {
-      margin-bottom: $baseline;
-      border-top: 5px solid $blue;
-      background-color: $white;
-
-      .pub-status {
-        @extend %t-title6;
-        display: block;
-        background-color: $blue-l2;
-        padding: ($baseline/2) ($baseline*.75);
-        font-weight: 600;
-      }
+      @extend %bar-module;
 
       &.published {
-        border-top: 5px solid $blue;
-
-        .pub-status {
-          background-color: $blue-t0;
-        }
-
-      }
-
-      &.draft {
-        border-top: 5px solid $gray-l1;
-
-        .pub-status {
-          background-color: $gray-l4;
-        }
-      }
-
-      .copy {
-        @extend %t-copy-sub1;
-        padding: ($baseline*.75) ($baseline*.75) ($baseline) ($baseline*.75);
+        @extend %bar-module-blue;
       }
     }
 
     // location widget
     .unit-location {
-      border-top: 5px solid $gray-l1;
-      background-color: $white;
+      @extend %bar-module;
 
-      .header {
-        @extend %t-title6;
-        padding: ($baseline/2) ($baseline*.75);
-        background-color: $gray-l4;
-        font-weight: 600;
-      }
-
-      .content-bit {
-        margin: ($baseline*.75);
-        border-bottom: 1px solid $gray-l4;
-        padding-bottom: ($baseline/2);
-
-        &:last-child {
-          border-bottom: 0;
-        }
+      .wrapper-unit-id {
 
         .title {
          @extend %t-title7;
          margin-bottom: ($baseline/2);
          font-weight: 600;
          color: $gray-d1;
+        }
+
+        .unit-id-value {
+          @extend %t-copy-sub1;
+          display: inline-block;
+          margin: ($baseline/4) 0;
         }
 
         .tip {
@@ -167,28 +94,16 @@
         }
       }
 
-      .wrapper-unit-id {
-
-        .unit-id-value {
-          @extend %t-copy-sub1;
-          display: inline-block;
-          margin: ($baseline/4) 0;
-        }
-      }
-
       .wrapper-unit-tree-location {
 
         .draggable-drop-indicator {
           display: none;
         }
 
-        .section-name {
-          @extend %t-title8;
-
-          &:hover {
-            background: $blue-l5;
-            color: $blue;
-          }
+        // need to explicitly set this since the html sturcture is different than the others
+        .section-name:hover {
+          background: $blue-l5;
+          color: $blue;
         }
 
         .subsection,
@@ -223,6 +138,7 @@
             background-color: $orange-l3;
           }
 
+          // TODO: update these once we have different pub states
           .public-item {
             color: $black;
           }
@@ -286,7 +202,7 @@
 }
 
 // UI: xblock rendering
-body.view-container .content-primary {
+.content-primary {
 
   // dragging bits
   .ui-sortable-helper {
@@ -516,6 +432,7 @@ body.view-container .content-primary {
   }
 }
 
+
 // ====================
 
 // UI: xblocks - internal styling
@@ -525,12 +442,12 @@ body.view-container .content-primary {
 
     // UI: xblocks - internal headings for problems and video components
     h2 {
-    margin: 30px 40px 30px 0;
-    color: #646464;
-    font-size: 19px;
-    font-weight: 300;
-    letter-spacing: 1px;
-    text-transform: uppercase;
+      @extend %t-title5;
+      margin: ($baseline*1.5) ($baseline*2) ($baseline*1.5) 0;
+      color: $gray;
+      letter-spacing: 1px;
+      text-transform: uppercase;
   }
 }
+
 
