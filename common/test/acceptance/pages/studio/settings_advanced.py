@@ -6,7 +6,7 @@ from .course_page import CoursePage
 from .utils import press_the_notification_button, type_in_codemirror, get_codemirror_value
 
 
-KEY_CSS = '.key input.policy-key'
+KEY_CSS = '.key h3.title'
 
 
 class AdvancedSettingsPage(CoursePage):
@@ -22,7 +22,7 @@ class AdvancedSettingsPage(CoursePage):
     def _get_index_of(self, expected_key):
         for i, element in enumerate(self.q(css=KEY_CSS)):
             # Sometimes get stale reference if I hold on to the array of elements
-            key = self.q(css=KEY_CSS)[i].get_attribute('value')
+            key = self.q(css=KEY_CSS).nth(i).text[0]
             if key == expected_key:
                 return i
 

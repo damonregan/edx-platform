@@ -19,7 +19,7 @@ class GroupConfigurationsPage(CoursePage):
         """
         Returns list of the group configurations for the course.
         """
-        css = '.wrap-group-configuration'
+        css = '.wrapper-group-configuration'
         return [GroupConfiguration(self, index) for index in xrange(len(self.q(css=css)))]
 
 

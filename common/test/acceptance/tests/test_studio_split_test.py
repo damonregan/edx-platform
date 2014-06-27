@@ -198,14 +198,14 @@ class SettingsMenuTest(UniqueCourseTest):
         link_css = 'li.nav-course-settings-group-configurations a'
         self.assertFalse(self.advanced_settings.q(css=link_css).present)
 
-        self.advanced_settings.set('advanced_modules', '["split_test"]')
+        self.advanced_settings.set('Advanced Module List', '["split_test"]')
 
         self.browser.refresh()
         self.advanced_settings.wait_for_page()
 
         self.assertIn(
             "split_test",
-            json.loads(self.advanced_settings.get('advanced_modules')),
+            json.loads(self.advanced_settings.get('Advanced Module List')),
         )
 
         self.assertTrue(self.advanced_settings.q(css=link_css).present)
@@ -216,7 +216,7 @@ class SettingsMenuTest(UniqueCourseTest):
         in the Settings menu.
         """
         link_css = 'li.nav-course-settings-group-configurations a'
-        self.advanced_settings.set('advanced_modules', '[]')
+        self.advanced_settings.set('Advanced Module List', '[]')
         self.browser.refresh()
         self.advanced_settings.wait_for_page()
         self.assertFalse(self.advanced_settings.q(css=link_css).present)
@@ -233,7 +233,7 @@ class GroupConfigurationsTest(UniqueCourseTest):
 
         course_fix = CourseFixture(**self.course_info)
         course_fix.add_advanced_settings({
-            u"advanced_modules": ["split_test"],
+            u"advanced_modules": {"value": ["split_test"]},
         })
 
         course_fix.install()
@@ -275,10 +275,12 @@ class GroupConfigurationsTest(UniqueCourseTest):
         expanded/collapsed mode.
         """
         self.course_fix.add_advanced_settings({
-            u"user_partitions": [
-                UserPartition(0, 'Name of the Group Configuration', 'Description of the group configuration.', [Group("0", 'Group 0'), Group("1", 'Group 1')]).to_json(),
-                UserPartition(1, 'Name of second Group Configuration', 'Second group configuration.', [Group("0", 'Alpha'), Group("1", 'Beta'), Group("2", 'Gamma')]).to_json()
-            ],
+            u"user_partitions": {
+                "value": [
+                    UserPartition(0, 'Name of the Group Configuration', 'Description of the group configuration.', [Group("0", 'Group 0'), Group("1", 'Group 1')]).to_json(),
+                    UserPartition(1, 'Name of second Group Configuration', 'Second group configuration.', [Group("0", 'Alpha'), Group("1", 'Beta'), Group("2", 'Gamma')]).to_json()
+                ],
+            },
         })
         self.course_fix._add_advanced_settings()
 
