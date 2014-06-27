@@ -5,8 +5,8 @@
  * 3) Display of who last edited the xblock, and when.
  * 4) Display of publish status (published, published with changes, changes with no published version).
  */
-define(["jquery", "gettext", "js/views/baseview"],
-    function ($, gettext, BaseView) {
+define(["jquery", "underscore", "gettext", "js/views/baseview", "js/views/feedback_prompt"],
+    function ($, _, gettext, BaseView, PromptView) {
         'use strict';
         var XBlockPublisher = BaseView.extend({
             events: {
@@ -19,9 +19,11 @@ define(["jquery", "gettext", "js/views/baseview"],
             initialize: function () {
                 BaseView.prototype.initialize.call(this);
                 this.template = this.loadTemplate('publish-xblock');
+                this.listenTo(this.model, "sync", this.render);
             },
 
             render: function () {
+                console.log("render!");
                 this.$el.html(this.template({
                     has_changes: this.model.get('has_changes'),
                     published: this.model.get('published'),
@@ -33,17 +35,50 @@ define(["jquery", "gettext", "js/views/baseview"],
             },
 
             publish: function (e) {
+                var xblockInfo = this.model;
                 if (e && e.preventDefault) {
                     e.preventDefault();
                 }
-                console.log('publish');
+                this.runOperationShowingMessage(gettext('Publishing&hellip;'),
+                    function () {
+                        return xblockInfo.save({publish: 'make_public'});
+                    }).done(function () {
+                        xblockInfo.fetch();
+                    });
             },
 
             discardChanges: function (e) {
                 if (e && e.preventDefault) {
                     e.preventDefault();
                 }
-                console.log('discard changes');
+                var xblockInfo = this.model,
+                    view;
+                view = new PromptView.Warning({
+                    title: gettext("Discard Changes"),
+                    message: gettext("Are you sure you want to discard changes and revert to the last published version?"),
+                    actions: {
+                        primary: {
+                            text: gettext("Discard Changes"),
+                            click: function (view) {
+                                view.hide();
+                                $.ajax({
+                                    type: 'DELETE',
+                                    url: xblockInfo.url() + "?" + $.param({
+                                        recurse: true
+                                    })
+                                }).success(function () {
+                                    return window.location.reload();
+                                });
+                            }
+                        },
+                        secondary: {
+                            text: gettext("Cancel"),
+                            click: function (view) {
+                                view.hide();
+                            }
+                        }
+                    }
+                }).show();
             }
         });
 

@@ -50,6 +50,9 @@ define(["backbone", "js/utils/module"], function(Backbone, ModuleUtils) {
              */
             "release_date_from":null
         }
+        // NOTE: 'publish' is not an attribute on XBlockInfo, but it used to signal the publish
+        // and discard changes actions. Therefore 'publish' cannot be introduced as an attribute.
+
     });
     return XBlockInfo;
 });

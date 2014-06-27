@@ -12,8 +12,6 @@ from xmodule.modulestore.exceptions import ItemNotFoundError
 from edxmako.shortcuts import render_to_response
 
 from xmodule.modulestore.django import modulestore
-from django.contrib.auth.models import User
-from util.date_utils import get_default_time_display
 
 from xblock.core import XBlock
 from xblock.django.request import webob_to_django_response, django_to_webob_request
@@ -24,6 +22,7 @@ from xblock.runtime import Mixologist
 
 from contentstore.utils import get_lms_link_for_item, compute_publish_state, PublishState, get_modulestore
 from contentstore.views.helpers import get_parent_xblock, is_unit
+from contentstore.views.item import create_xblock_info
 
 from models.settings.course_grading import CourseGradingModel
 from opaque_keys.edx.keys import UsageKey
@@ -179,7 +178,6 @@ def container_handler(request, usage_key_string):
 
         is_unit_page = is_unit(xblock)
         unit = xblock if is_unit_page else None
-        unit_publish_state = compute_publish_state(unit) if unit else None
 
         while parent and parent.category != 'course':
             if unit is None and is_unit(parent):
@@ -190,16 +188,7 @@ def container_handler(request, usage_key_string):
 
         subsection = get_parent_xblock(unit) if unit else None
         section = get_parent_xblock(subsection) if subsection else None
-
-        xblock_info = {
-            "id": str(usage_key),
-            "display_name": xblock.display_name_with_default,
-            "category": xblock.category,
-            "has_changes": get_modulestore(usage_key).has_changes(usage_key),
-            "published": unit_publish_state in (PublishState.public, PublishState.draft),
-            "edited_on": get_default_time_display(xblock.edited_on) if xblock.edited_on else None,
-            "edited_by": User.objects.get(id=xblock.edited_by).username if xblock.edited_by else None
-        }
+        xblock_info = create_xblock_info(usage_key, xblock)
 
         return render_to_response('container.html', {
             'context_course': course,  # Needed only for display of menus at top of page.

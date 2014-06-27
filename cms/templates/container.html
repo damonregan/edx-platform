@@ -36,27 +36,21 @@ from django.utils.translation import ugettext as _
 <%block name="jsextra">
 <script type='text/javascript'>
     require(["domReady!", "jquery", "js/models/xblock_info", "js/views/pages/container",
-        "js/collections/component_template", "js/views/publish_xblock", "xmodule", "coffee/src/main", "xblock/cms.runtime.v1"],
-            function(doc, $, XBlockInfo, ContainerPage, ComponentTemplates, XBlockPublisher, xmoduleLoader) {
+        "js/collections/component_template", "xmodule", "coffee/src/main", "xblock/cms.runtime.v1"],
+            function(doc, $, XBlockInfo, ContainerPage, ComponentTemplates, xmoduleLoader) {
                 var templates = new ComponentTemplates(${component_templates | n}, {parse: true});
                 var mainXBlockInfo = new XBlockInfo(${xblock_info | n});
+                var isUnitPage = ${json.dumps(is_unit_page)}
 
                 xmoduleLoader.done(function () {
                     var view = new ContainerPage({
                         el: $('#content'),
                         model: mainXBlockInfo,
-                        templates: templates
+                        templates: templates,
+                        isUnitPage: isUnitPage
                     });
                     view.render();
                 });
-
-                if (${json.dumps(is_unit_page)}) {
-                    var xblock_publisher = new XBlockPublisher({
-                        el: $('#publish-unit'),
-                        model: mainXBlockInfo
-                    });
-                    xblock_publisher.render();
-                }
             });
 </script>
 
