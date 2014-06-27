@@ -38,7 +38,7 @@
     .no-container-content {
       @extend %no-content;
 
-      // custom rules to handle different xblock styling in different contexts
+      // custom rules to reuse xblock validation styling in ui-well context
       .icon-warning-sign {
         display: none;
       }
@@ -212,6 +212,7 @@
     }
   }
 
+  // drop target
   .component-placeholder {
     height: ($baseline*2.5);
     opacity: .5;
@@ -231,9 +232,13 @@
     background-color: $gray-l5;
     padding: ($baseline/2);
 
-    h5 {
-      margin-bottom: ($baseline*.75);
-    }
+    .new-component {
+      text-align: center;
+
+      h5 {
+        margin-bottom: ($baseline*.75);
+        color: $darkGreen;
+      }
 
     .new-component-type a {
       margin-bottom: ($baseline/2);

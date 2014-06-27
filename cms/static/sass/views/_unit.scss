@@ -363,18 +363,18 @@ body.course.unit,
   }
 }
 
-// Editor Wrapper
+// xblock Editor tab wrapper
 .wrapper-comp-editor {
   display: block;
 
   // Because the editor may be a CodeMirror editor (which must be visible at the time it is created
-  // in order for it to properly initialize), we must toggle "is-inactive" instead of the more common "is-active".
+  // in order for it to properly initialize), we must toggle "is-inactive" instead of the more common "is-active"
   &.is-inactive {
     display: none;
   }
 }
 
-// Settings Wrapper
+// xblock Settings tab wrapper
 .wrapper-comp-settings {
   display: none;
 
@@ -447,18 +447,8 @@ body.course.unit,
       background-color: $white;
       padding: $baseline ($baseline/2);
 
-      &:first-child {
-        border-top: 0;
-      }
-
-      //no required component settings currently
-      &.required {
-        label {
-          //font-weight: 600;
-        }
-        label:after {
-          //margin-left: ($baseline/4);
-          //content: "*";
+        &:first-child {
+          border-top: 0;
         }
       }
 
@@ -504,32 +494,16 @@ body.course.unit,
         @include placeholder($gray-l4);
         @include font-size(16);
         @include size(100%,100%);
-        padding: ($baseline/2);
-        min-width: 100px;
         width: 45%;
-
-        //&.long {
-          //
-        //}
-
-        //&.short {
-        //}
-
-        //&.error {
-        // border-color: $red;
-        //}
-
-        //&:focus {
-        //  + .tip {
-        //    color: $gray;
-        //  }
+        min-width: 100px;
+        padding: ($baseline/2);
         border-radius: 3px;
         border: 1px solid $gray-l2;
         text-overflow: ellipsis;
       }
 
       //Allows users to copy full value of disabled inputs.
-      input.is-disabled{
+      input.is-disabled {
         text-overflow: clip;
         opacity: .5;
       }
@@ -548,7 +522,6 @@ body.course.unit,
       }
 
       select {
-        //box-shadow: 0 1px 2px $shadow-l1 inset;
 
         &:focus {
           box-shadow: 0 0 1px $shadow;
